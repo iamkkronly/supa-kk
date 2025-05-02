@@ -1,112 +1,115 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notes Taker App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notes App with Supabase</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    const SUPABASE_URL = "https://heajntisnbzqysclktjl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlYWpudGlzbmJ6cXlzY2xrdGpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyMDU5MDgsImV4cCI6MjA2MTc4MTkwOH0.pc-V1K8XZ3SNTtiGZ-VE1VIh430_4_kTMdbrf_lfGyE";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  </script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f3f4f6;
-    }
-    .container {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .hidden {
-      display: none;
-    }
-    .note-card {
-      background: #e5e7eb;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 5px;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container" id="auth">
-    <h2>Sign Up</h2>
-    <input type="email" id="signup-email" placeholder="Email" /><br /><br />
-    <input type="password" id="signup-password" placeholder="Password" /><br /><br />
-    <button onclick="signup()">Sign Up</button>
-    <p>Already have an account? <a href="#" onclick="toggleAuth(true)">Login</a></p><div class="hidden" id="login-section">
-  <h2>Login</h2>
-  <input type="email" id="login-email" placeholder="Email" /><br /><br />
-  <input type="password" id="login-password" placeholder="Password" /><br /><br />
-  <button onclick="login()">Login</button>
-  <p>Need account? <a href="#" onclick="toggleAuth(false)">Sign Up</a></p>
-</div>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md mx-auto p-6 bg-white shadow-xl rounded-2xl">
+    <h1 class="text-3xl font-bold mb-4 text-center text-purple-600">Notes Taker</h1>
+    
+    <!-- Auth Section -->
+    <div id="auth-section">
+      <input id="email" type="email" placeholder="Email" class="w-full p-2 mb-2 border rounded-lg" />
+      <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-4 border rounded-lg" />
+      <button onclick="signUp()" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg mb-2">Sign Up</button>
+      <button onclick="signIn()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg">Login</button>
+    </div>
 
-  </div>  <div class="container hidden" id="notes-app">
-    <h2>Welcome!</h2>
-    <input type="text" id="note-input" placeholder="Write a note..." />
-    <button onclick="addNote()">Add Note</button>
-    <div id="notes-list"></div>
-    <button onclick="logout()">Logout</button>
-  </div>  <script>
-    const toggleAuth = (isLogin) => {
-      document.getElementById('login-section').classList.toggle('hidden', !isLogin);
-    };
+    <!-- Notes Section -->
+    <div id="notes-section" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Your Notes</h2>
+        <button onclick="signOut()" class="text-red-500 text-sm">Logout</button>
+      </div>
+      <textarea id="note-input" rows="3" class="w-full p-2 mb-2 border rounded-lg" placeholder="Write your note..."></textarea>
+      <button onclick="addNote()" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg mb-4">Add Note</button>
+      <div id="notes-list" class="space-y-2"></div>
+    </div>
+  </div>
 
-    const signup = async () => {
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password
-      });
-      if (error) return alert(error.message);
-      alert("Signup successful! Check your email to confirm account.");
-    };
+  <script>
+    // Your Supabase credentials
+    const SUPABASE_URL = 'https://heajntisnbzqysclktjl.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlYWpudGlzbmJ6cXlzY2xrdGpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyMDU5MDgsImV4cCI6MjA2MTc4MTkwOH0.pc-V1K8XZ3SNTtiGZ-VE1VIh430_4_kTMdbrf_lfGyE';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const login = async () => {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return alert(error.message);
-      document.getElementById('auth').classList.add('hidden');
-      document.getElementById('notes-app').classList.remove('hidden');
-      loadNotes();
-    };
+    const authSection = document.getElementById('auth-section');
+    const notesSection = document.getElementById('notes-section');
+    const notesList = document.getElementById('notes-list');
 
-    const logout = async () => {
-      await supabase.auth.signOut();
-      document.getElementById('notes-app').classList.add('hidden');
-      document.getElementById('auth').classList.remove('hidden');
-    };
+    checkSession();
 
-    const addNote = async () => {
-      const note = document.getElementById('note-input').value;
-      const user = (await supabase.auth.getUser()).data.user;
-      const { data, error } = await supabase.from('notes').insert([{ user_id: user.id, content: note }]);
-      if (!error) {
-        document.getElementById('note-input').value = '';
+    async function signUp() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) alert(error.message);
+      else alert("Check your email to confirm account!");
+    }
+
+    async function signIn() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) alert(error.message);
+      else {
+        showNotes();
         loadNotes();
       }
-    };
+    }
 
-    const loadNotes = async () => {
+    async function signOut() {
+      await supabase.auth.signOut();
+      authSection.classList.remove('hidden');
+      notesSection.classList.add('hidden');
+    }
+
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        showNotes();
+        loadNotes();
+      }
+    }
+
+    function showNotes() {
+      authSection.classList.add('hidden');
+      notesSection.classList.remove('hidden');
+    }
+
+    async function addNote() {
       const user = (await supabase.auth.getUser()).data.user;
-      const { data, error } = await supabase.from('notes').select('*').eq('user_id', user.id);
-      const list = document.getElementById('notes-list');
-      list.innerHTML = '';
+      const content = document.getElementById('note-input').value;
+      if (!content) return;
+      await supabase.from('notes').insert({ user_id: user.id, content });
+      document.getElementById('note-input').value = '';
+      loadNotes();
+    }
+
+    async function loadNotes() {
+      const user = (await supabase.auth.getUser()).data.user;
+      const { data, error } = await supabase.from('notes').select('*').eq('user_id', user.id).order('id', { ascending: false });
+      if (error) return alert(error.message);
+      notesList.innerHTML = '';
       data.forEach(note => {
-        const div = document.createElement('div');
-        div.className = 'note-card';
-        div.textContent = note.content;
-        list.appendChild(div);
+        const noteEl = document.createElement('div');
+        noteEl.className = 'p-3 bg-gray-200 rounded-lg flex justify-between items-center';
+        noteEl.innerHTML = `
+          <span>${note.content}</span>
+          <button onclick="deleteNote(${note.id})" class="text-red-500 text-sm">Delete</button>
+        `;
+        notesList.appendChild(noteEl);
       });
-    };
-  </script></body>
+    }
+
+    async function deleteNote(id) {
+      await supabase.from('notes').delete().eq('id', id);
+      loadNotes();
+    }
+  </script>
+</body>
 </html>
