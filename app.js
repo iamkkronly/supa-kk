@@ -30,7 +30,7 @@ async function showNotes() {
   authSection.classList.add('hidden');
   notesSection.classList.remove('hidden');
   const { data: { user } } = await supabase.auth.getUser();
-  const { data } = await supabase.from('notes').select('*').eq('email', user.email).single();
+  const { data, error } = await supabase.from('notes').select('*').eq('email', user.email).single();
   if (data) noteBox.value = data.content;
 }
 
@@ -39,7 +39,7 @@ window.saveNote = async () => {
   const { error } = await supabase
     .from('notes')
     .upsert([{ email: user.email, content: noteBox.value }], { onConflict: ['email'] });
-  savedNote.innerText = error ? 'Error saving!' : 'Note saved!';
+  savedNote.innerText = error ? 'Error saving!' : 'Note saved successfully!';
 };
 
 supabase.auth.getSession().then(({ data: { session } }) => {
