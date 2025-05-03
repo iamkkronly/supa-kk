@@ -9,13 +9,13 @@ window.signUp = async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const { error } = await supabase.auth.signUp({ email, password });
-  alert(error ? error.message : 'Signup successful, check your email!');
+  alert(error ? error.message : 'Signup successful! Please check your email to verify.');
 };
 
 window.login = async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return alert(error.message);
   showNotes();
 };
@@ -30,7 +30,7 @@ async function showNotes() {
   authSection.classList.add('hidden');
   notesSection.classList.remove('hidden');
   const { data: { user } } = await supabase.auth.getUser();
-  const { data } = await supabase.from('notes').select('content').eq('user_id', user.id).single();
+  const { data } = await supabase.from('notes').select('*').eq('email', user.email).single();
   if (data) noteBox.value = data.content;
 }
 
@@ -38,7 +38,7 @@ window.saveNote = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase
     .from('notes')
-    .upsert([{ user_id: user.id, content: noteBox.value }], { onConflict: ['user_id'] });
+    .upsert([{ email: user.email, content: noteBox.value }], { onConflict: ['email'] });
   savedNote.innerText = error ? 'Error saving!' : 'Note saved!';
 };
 
