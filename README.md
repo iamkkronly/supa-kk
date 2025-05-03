@@ -12,6 +12,6 @@ A minimal, responsive, Supabase-powered note-taking web app.
 ## Deploy
 
 1. Clone this repo
-2. Add your own Supabase URL and anon key in `supabase.js`
+2. Add your own Supabase URL and anon key in `supabase.js` if needed
 3. Push to GitHub
 4. Deploy using GitHub Pages (via settings > pages)
